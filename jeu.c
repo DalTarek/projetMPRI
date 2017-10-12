@@ -11,7 +11,7 @@
 #include <time.h>
 
 // Paramètres du jeu
-#define LARGEUR_MAX 9 		// nb max de fils pour un noeud (= nb max de coups possibles)
+#define LARGEUR_MAX 7 		// nb max de fils pour un noeud (= nb max de coups possibles)
 #define TEMPS 5		// temps de calcul pour un coup avec MCTS (en secondes)
 #define LIGNE 6
 #define COL 7
@@ -89,7 +89,7 @@ void afficheJeu(Etat * etat) {
 
 
 // Nouveau coup
-Coup * nouveauCoup(int j) {
+Coup * nouveauCoup( int j ) {
 	Coup * coup = (Coup *)malloc(sizeof(Coup));
 
 	coup->colonne = j;
@@ -133,19 +133,18 @@ Coup ** coups_possibles( Etat * etat ) {
 
 	int k = 0;
 
-	// TODO: à compléter
-
-	/* par exemple */
-	int i,j;
-	for(i=0; i < 3; i++) {
-		for (j=0; j < 3; j++) {
-			if ( etat->plateau[i][j] == ' ' ) {
-				coups[k] = nouveauCoup(i,j);
+	int i, j;
+	for(j = 0; j < COL; j++){
+        i = LIGNE - 1;
+        while(i >= 0){
+            if ( etat->plateau[i][j] == ' ' ) {
+				coups[k] = nouveauCoup(j);
 				k++;
 			}
-		}
+            i--;
+        }
+
 	}
-	/* fin de l'exemple */
 
 	coups[k] = NULL;
 
