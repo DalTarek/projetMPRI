@@ -36,7 +36,6 @@ typedef struct EtatSt {
 // Definition du type Coup
 typedef struct {
 
-	int ligne;
 	int colonne;
 
 } Coup;
@@ -90,14 +89,9 @@ void afficheJeu(Etat * etat) {
 
 
 // Nouveau coup
-// TODO: adapter la liste de paramètres au jeu
-Coup * nouveauCoup( int i, int j ) {
+Coup * nouveauCoup(int j) {
 	Coup * coup = (Coup *)malloc(sizeof(Coup));
 
-	// TODO: à compléter avec la création d'un nouveau coup
-
-	/* par exemple : */
-	coup->ligne = i;
 	coup->colonne = j;
 
 	return coup;
@@ -106,16 +100,11 @@ Coup * nouveauCoup( int i, int j ) {
 // Demander à l'humain quel coup jouer
 Coup * demanderCoup () {
 
-	// TODO...
-
-	/* par exemple : */
-	int i,j;
-	printf("\n quelle ligne ? ") ;
-	scanf("%d",&i);
+	int j;
 	printf(" quelle colonne ? ") ;
 	scanf("%d",&j);
 
-	return nouveauCoup(i,j);
+	return nouveauCoup(j);
 }
 
 // Modifier l'état en jouant un coup
