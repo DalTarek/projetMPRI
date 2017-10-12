@@ -111,19 +111,18 @@ Coup * demanderCoup () {
 // retourne 0 si le coup n'est pas possible
 int jouerCoup( Etat * etat, Coup * coup ) {
 
-	// TODO: à compléter
+	int i = LIGNE - 1;
+	while(i >= 0){
+        if ( etat->plateau[i][coup->colonne] == ' ' ){
+            etat->plateau[i][coup->colonne] = etat->joueur ? 'O' : 'X';
 
-	/* par exemple : */
-	if ( etat->plateau[coup->ligne][coup->colonne] != ' ' )
-		return 0;
-	else {
-		etat->plateau[coup->ligne][coup->colonne] = etat->joueur ? 'O' : 'X';
-
-		// à l'autre joueur de jouer
-		etat->joueur = AUTRE_JOUEUR(etat->joueur);
-
-		return 1;
+            // à l'autre joueur de jouer
+            etat->joueur = AUTRE_JOUEUR(etat->joueur);
+            return 1;
+        }
+        i--;
 	}
+    return 0;
 }
 
 // Retourne une liste de coups possibles à partir d'un etat
