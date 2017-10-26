@@ -15,8 +15,10 @@
 #define TEMPS 5		// temps de calcul pour un coup avec MCTS (en secondes)
 #define LIGNE 6
 #define COL 7
+#define C sqrt(2)
 
 // macros
+//0 : humain, 1 : ordinateur
 #define AUTRE_JOUEUR(i) (1-(i))
 #define min(a, b)       ((a) < (b) ? (a) : (b))
 #define max(a, b)       ((a) < (b) ? (b) : (a))
@@ -221,10 +223,6 @@ void freeNoeud ( Noeud * noeud) {
 // et retourne NON, ORDI_GAGNE ou HUMAIN_GAGNE
 FinDePartie testFin( Etat * etat ) {
 
-	// TODO...
-
-	/* par exemple	*/
-
 	// tester si un joueur a gagné
 	int i,j,k,n = 0;
 	for ( i=0;i < LIGNE; i++) {
@@ -298,20 +296,93 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
 
 	meilleur_coup = coups[ rand()%k ]; // choix aléatoire
 
-	/*  TODO :
-		- supprimer la sélection aléatoire du meilleur coup ci-dessus
-		- implémenter l'algorithme MCTS-UCT pour déterminer le meilleur coup ci-dessous
+    /* début de l'algorithme  */
 
 	int iter = 0;
 
 	do {
-
-
+        int bMax = 1, b, i, bMaxIndice, vJoueur = 1;
+        // Facteur de multiplication en fonction du joueur
+        if(racine->joueur == 0){
+            vJoueur = -1;
+        }
+        // Récursion jusqu'à trouver un état terminal ou un noeud avec aucun fils développé
+        while(testFin(racine->etat) == NON && bMax > 0){
+            bMax = 0;
+            // Sélection du plus grand B-valeur si il existe
+            for(i =0; i < racine->nb_enfants; i++){
+                if(racine->enfants[i]->nb_simus > 0){
+                    b = vJoueur * racine->enfants[i]->nb_victoires/racine->enfants[i]->nb_simus + C * sqrt(log(racine->nb_simus)/racine->enfants[i]->nb_simus);
+                    if(b > bMax){
+                        bMax = b;
+                        bMaxIndice = i;
+                    }
+                }
+            }
+            if(bMax > 0){
+                racine = racine->enfants[bMaxIndice];
+            }
+        }
+        if(bMax == 0 && testFin(racine->etat) == NON){
+            // Cas noeud où aucun fils développé
+            // On choisit un fils aléatoirement jusqu'à arriver à un état terminal
+            while(testFin(racine->etat) == NON){
+                // créer les fils
+                racine = racine->enfants[rand()%racine->nb_enfants];
+                coups = coups_possibles(racine->etat);
+                k = 0;
+                while ( coups[k] != NULL) {
+                    ajouterEnfant(racine, coups[k]);
+                    k++;
+                }
+            }
+            // On répercute le résultat en fonction de qui a gagné
+            if(testFin(racine->etat) == ORDI_GAGNE){
+                while(racine->parent != NULL){
+                    racine->nb_simus = racine->nb_simus + 1;
+                    racine->nb_victoires = racine->nb_victoires + 1;
+                }
+                racine->nb_simus = racine->nb_simus + 1;
+                racine->nb_victoires = racine->nb_victoires + 1;
+            }else{
+                while(racine->parent != NULL){
+                    racine->nb_simus = racine->nb_simus + 1;
+                }
+                racine->nb_simus = racine->nb_simus + 1;
+            }
+        }else{
+            // Cas noeud terminal
+            // On répercute le résultat en fonction de qui a gagné
+            if(testFin(racine->etat) == ORDI_GAGNE){
+                while(racine->parent != NULL){
+                    racine->nb_simus = racine->nb_simus + 1;
+                    racine->nb_victoires = racine->nb_victoires + 1;
+                }
+                racine->nb_simus = racine->nb_simus + 1;
+                racine->nb_victoires = racine->nb_victoires + 1;
+            }else{
+                while(racine->parent != NULL){
+                    racine->nb_simus = racine->nb_simus + 1;
+                }
+                racine->nb_simus = racine->nb_simus + 1;
+            }
+        }
+        // Sélection du plus grand B-valeur si il existe pour l'affectation du meilleur coup
+        bMaxIndice = rand() % racine->nb_enfants;
+        bMax = 0;
+        for(i =0; i < racine->nb_enfants; i++){
+            if(racine->enfants[i]->nb_simus > 0){
+                b = vJoueur * racine->enfants[i]->nb_victoires/racine->enfants[i]->nb_simus + C * sqrt(log(racine->nb_simus)/racine->enfants[i]->nb_simus);
+                if(b > bMax){
+                    bMax = b;
+                    bMaxIndice = i;
+                }
+            }
+        }
+        //Affectation du meilleur coup
+        meilleur_coup = racine->enfants[bMaxIndice]->coup;
 
 		// à compléter par l'algorithme MCTS-UCT...
-
-
-
 
 		toc = clock();
 		temps = (int)( ((double) (toc - tic)) / CLOCKS_PER_SEC );
@@ -368,8 +439,6 @@ int main(void) {
 
 	if ( fin == ORDI_GAGNE )
 		printf( "** L'ordinateur a gagné **\n");
-	else if ( fin == MATCHNUL )
-		printf(" Match nul !  \n");
 	else
 		printf( "** BRAVO, l'ordinateur a perdu  **\n");
 	return 0;
