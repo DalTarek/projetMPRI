@@ -137,7 +137,7 @@ Coup ** coups_possibles( Etat * etat ) {
 
 	int j;
 	for(j = 0; j < COL; j++){
-        if ( etat->plateau[LIGNE-1][j] == ' ' ) {
+        if ( etat->plateau[0][j] == ' ' ) {
             coups[k] = nouveauCoup(j);
             k++;
         }
@@ -294,24 +294,24 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
 	}
 
 
-	meilleur_coup = coups[ rand()%k ]; // choix aléatoire
+	//meilleur_coup = coups[ rand()%k ]; // choix aléatoire
 
     /* début de l'algorithme  */
 
 	int iter = 0;
 
 	do {
-        int bMax = 1, b, i, bMaxIndice, vJoueur = 1;
-        // Facteur de multiplication en fonction du joueur
-        if(racine->joueur == 0){
-            vJoueur = -1;
-        }
+        int bMax = 1, b, i, bMaxIndice, vJoueur;
         // Récursion jusqu'à trouver un état terminal ou un noeud avec aucun fils développé
         while(testFin(racine->etat) == NON && bMax > 0){
             bMax = 0;
             // Sélection du plus grand B-valeur si il existe
             for(i =0; i < racine->nb_enfants; i++){
                 if(racine->enfants[i]->nb_simus > 0){
+                    // Facteur de multiplication en fonction du joueur
+                    if(racine->joueur == 0){
+                        vJoueur = -1;
+                    }
                     b = vJoueur * racine->enfants[i]->nb_victoires/racine->enfants[i]->nb_simus + C * sqrt(log(racine->nb_simus)/racine->enfants[i]->nb_simus);
                     if(b > bMax){
                         bMax = b;
@@ -336,20 +336,28 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
                     k++;
                 }
             }
+            printf("aaa");
             // On répercute le résultat en fonction de qui a gagné
             if(testFin(racine->etat) == ORDI_GAGNE){
+                printf("bbb");
                 while(racine->parent != NULL){
+                    printf("111");
                     racine->nb_simus = racine->nb_simus + 1;
                     racine->nb_victoires = racine->nb_victoires + 1;
+                    racine = racine->parent;
                 }
+                printf("222");
                 racine->nb_simus = racine->nb_simus + 1;
                 racine->nb_victoires = racine->nb_victoires + 1;
             }else{
+                printf("ccc");
                 while(racine->parent != NULL){
                     racine->nb_simus = racine->nb_simus + 1;
+                    racine = racine->parent;
                 }
                 racine->nb_simus = racine->nb_simus + 1;
             }
+            printf("ddd");
         }else{
             // Cas noeud terminal
             // On répercute le résultat en fonction de qui a gagné
@@ -357,12 +365,14 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
                 while(racine->parent != NULL){
                     racine->nb_simus = racine->nb_simus + 1;
                     racine->nb_victoires = racine->nb_victoires + 1;
+                    racine = racine->parent;
                 }
                 racine->nb_simus = racine->nb_simus + 1;
                 racine->nb_victoires = racine->nb_victoires + 1;
             }else{
                 while(racine->parent != NULL){
                     racine->nb_simus = racine->nb_simus + 1;
+                    racine = racine->parent;
                 }
                 racine->nb_simus = racine->nb_simus + 1;
             }
@@ -381,8 +391,6 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
         }
         //Affectation du meilleur coup
         meilleur_coup = racine->enfants[bMaxIndice]->coup;
-
-		// à compléter par l'algorithme MCTS-UCT...
 
 		toc = clock();
 		temps = (int)( ((double) (toc - tic)) / CLOCKS_PER_SEC );
