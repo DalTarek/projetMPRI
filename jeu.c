@@ -302,6 +302,8 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
 
 	int nb_vict = 0;
 
+	float proba_vict;
+
 	do {
         int i, bMaxIndice; //vJoueur;
         float bMax, b;
@@ -315,7 +317,7 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
                     if(racine->joueur == 0){
                         vJoueur = -1;
                     }*/
-                    b = (float)(racine->enfants[i]->nb_victoires/racine->enfants[i]->nb_simus) + C * sqrt(log(racine->nb_simus)/racine->enfants[i]->nb_simus);
+                    b = ((float)(racine->enfants[i]->nb_victoires)/(float)(racine->enfants[i]->nb_simus)) + C * sqrt(log(racine->nb_simus)/racine->enfants[i]->nb_simus);
                     if(b > bMax){
                         bMax = b;
                         bMaxIndice = i;
@@ -387,7 +389,7 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
         bMax = 0;
         for(i =0; i < racine->nb_enfants; i++){
             if(racine->enfants[i]->nb_simus > 0){
-                b = (float)(racine->enfants[i]->nb_victoires/racine->enfants[i]->nb_simus) + C * sqrt(log(racine->nb_simus)/racine->enfants[i]->nb_simus);
+                b = ((float)(racine->enfants[i]->nb_victoires)/(float)(racine->enfants[i]->nb_simus)) + C * sqrt(log(racine->nb_simus)/racine->enfants[i]->nb_simus);
                 if(b > bMax){
                     bMax = b;
                     bMaxIndice = i;
@@ -409,7 +411,8 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
 
 	printf("Nombre de simulations realisees = %i\n", iter);
 	printf("Nombre de victoires = %i\n", nb_vict);
-	printf("Probabilite de gagner = %f\n", (float)nb_vict/iter);
+	proba_vict = (float)(nb_vict)/(float)(iter);
+	printf("Probabilite de gagner = %f\n", proba_vict);
 
 	// Penser à libérer la mémoire :
 	freeNoeud(racine);
