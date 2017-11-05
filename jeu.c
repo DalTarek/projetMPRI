@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <stdbool.h>
 
 // Paramètres du jeu
 #define LARGEUR_MAX 7 		// nb max de fils pour un noeud (= nb max de coups possibles)
@@ -303,39 +304,45 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
 	int nb_vict = 0;
 
 	do {
-        int i, bMaxIndice; //vJoueur;
+        int i, bMaxIndice;
         float bMax, b;
+        bool trouve;
         // Récursion jusqu'à trouver un état terminal ou un noeud avec aucun fils développé
         do {
-            bMax = 0;
             // Sélection du plus grand B-valeur si il existe
+            bMax = 0;
+            trouve = false;
             for(i =0; i < racine->nb_enfants; i++){
                 if(racine->enfants[i]->nb_simus > 0){
-                    /*// Facteur de multiplication en fonction du joueur
-                    if(racine->joueur == 0){
-                        vJoueur = -1;
-                    }*/
-                    b = (float)(racine->enfants[i]->nb_victoires/racine->enfants[i]->nb_simus) + C * sqrt(log(racine->nb_simus)/racine->enfants[i]->nb_simus);
+                    b = (((float)racine->enfants[i]->nb_victoires)/((float)racine->enfants[i]->nb_simus)) + C * sqrt(log((float)racine->nb_simus)/((float)racine->enfants[i]->nb_simus));
                     if(b > bMax){
                         bMax = b;
                         bMaxIndice = i;
                     }
-                    if(bMax == 0){
-                        bMax = 0.000001;
-                        bMaxIndice = i;
-                    }
+                    trouve = true;
                 }
             }
             if(bMax > 0){
                 racine = racine->enfants[bMaxIndice];
             }
         } while(testFin(racine->etat) == NON && bMax > 0);
+
         if(bMax == 0 && testFin(racine->etat) == NON){
-            // Cas noeud où aucun fils développé
+            // Cas noeud où aucun fils développé ou aucun fils important développé
             // On choisit un fils aléatoirement jusqu'à arriver à un état terminal
             while(testFin(racine->etat) == NON){
                 // créer les fils
-                racine = racine->enfants[rand()%racine->nb_enfants];
+                if(trouve){
+                    // Cas aucun fils important développé
+                    i = rand()%racine->nb_enfants;
+                    while(racine->enfants[i]->nb_simus > 0){
+                        i = rand()%racine->nb_enfants;
+                    }
+                    racine = racine->enfants[i];
+                }else{
+                    // Cas aucun fils développé
+                    racine = racine->enfants[rand()%racine->nb_enfants];
+                }
                 coups = coups_possibles(racine->etat);
                 k = 0;
                 while ( coups[k] != NULL && testFin(racine->etat) == NON) {
@@ -409,7 +416,7 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
 
 	printf("Nombre de simulations realisees = %i\n", iter);
 	printf("Nombre de victoires = %i\n", nb_vict);
-	printf("Probabilite de gagner = %f\n", (float)nb_vict/iter);
+	printf("Probabilite de gagner = %f\n", ((float)nb_vict)/((float)iter));
 
 	// Penser à libérer la mémoire :
 	freeNoeud(racine);
