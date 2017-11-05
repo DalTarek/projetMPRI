@@ -301,7 +301,8 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
 	int iter = 0;
 
 	do {
-        int bMax, b, i, bMaxIndice; //vJoueur;
+        int i, bMaxIndice; //vJoueur;
+        float bMax, b;
         // Récursion jusqu'à trouver un état terminal ou un noeud avec aucun fils développé
         do {
             bMax = 0;
@@ -315,6 +316,10 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
                     b = racine->enfants[i]->nb_victoires/racine->enfants[i]->nb_simus + C * sqrt(log(racine->nb_simus)/racine->enfants[i]->nb_simus);
                     if(b > bMax){
                         bMax = b;
+                        bMaxIndice = i;
+                    }
+                    if(bMax == 0){
+                        bMax = 0.000001;
                         bMaxIndice = i;
                     }
                 }
@@ -331,7 +336,7 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
                 racine = racine->enfants[rand()%racine->nb_enfants];
                 coups = coups_possibles(racine->etat);
                 k = 0;
-                while ( coups[k] != NULL) {
+                while ( coups[k] != NULL && testFin(racine->etat) == NON) {
                     ajouterEnfant(racine, coups[k]);
                     k++;
                 }
