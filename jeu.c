@@ -12,7 +12,7 @@
 
 // Paramètres du jeu
 #define LARGEUR_MAX 7 		// nb max de fils pour un noeud (= nb max de coups possibles)
-#define TEMPS 5		// temps de calcul pour un coup avec MCTS (en secondes)
+#define TEMPS 3		// temps de calcul pour un coup avec MCTS (en secondes)
 #define LIGNE 6
 #define COL 7
 #define C sqrt(2)
@@ -300,6 +300,8 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
 
 	int iter = 0;
 
+	int nb_vict = 0;
+
 	do {
         int i, bMaxIndice; //vJoueur;
         float bMax, b;
@@ -313,7 +315,7 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
                     if(racine->joueur == 0){
                         vJoueur = -1;
                     }*/
-                    b = racine->enfants[i]->nb_victoires/racine->enfants[i]->nb_simus + C * sqrt(log(racine->nb_simus)/racine->enfants[i]->nb_simus);
+                    b = (float)(racine->enfants[i]->nb_victoires/racine->enfants[i]->nb_simus) + C * sqrt(log(racine->nb_simus)/racine->enfants[i]->nb_simus);
                     if(b > bMax){
                         bMax = b;
                         bMaxIndice = i;
@@ -350,6 +352,8 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
                 }
                 racine->nb_simus = racine->nb_simus + 1;
                 racine->nb_victoires = racine->nb_victoires + 1;
+
+                nb_vict++;
             }else{
                 while(racine->parent != NULL){
                     racine->nb_simus = racine->nb_simus + 1;
@@ -368,6 +372,8 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
                 }
                 racine->nb_simus = racine->nb_simus + 1;
                 racine->nb_victoires = racine->nb_victoires + 1;
+
+                nb_vict++;
             }else{
                 while(racine->parent != NULL){
                     racine->nb_simus = racine->nb_simus + 1;
@@ -381,7 +387,7 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
         bMax = 0;
         for(i =0; i < racine->nb_enfants; i++){
             if(racine->enfants[i]->nb_simus > 0){
-                b = racine->enfants[i]->nb_victoires/racine->enfants[i]->nb_simus + C * sqrt(log(racine->nb_simus)/racine->enfants[i]->nb_simus);
+                b = (float)(racine->enfants[i]->nb_victoires/racine->enfants[i]->nb_simus) + C * sqrt(log(racine->nb_simus)/racine->enfants[i]->nb_simus);
                 if(b > bMax){
                     bMax = b;
                     bMaxIndice = i;
@@ -400,6 +406,10 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
 
 	// Jouer le meilleur premier coup
 	jouerCoup(etat, meilleur_coup );
+
+	printf("Nombre de simulations realisees = %i\n", iter);
+	printf("Nombre de victoires = %i\n", nb_vict);
+	printf("Probabilite de gagner = %f\n", (float)nb_vict/iter);
 
 	// Penser à libérer la mémoire :
 	freeNoeud(racine);
