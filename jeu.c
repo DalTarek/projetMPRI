@@ -13,7 +13,7 @@
 
 // Paramètres du jeu
 #define LARGEUR_MAX 7 		// nb max de fils pour un noeud (= nb max de coups possibles)
-#define TEMPS 3		// temps de calcul pour un coup avec MCTS (en secondes)
+#define TEMPS 10		// temps de calcul pour un coup avec MCTS (en secondes)
 #define LIGNE 6
 #define COL 7
 #define C sqrt(2)
@@ -299,10 +299,12 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
 	int iter = 0;
     int nb_vict = 0;
 
+    int i, bMaxIndice, vJoueur;
+    float bMax, b;
+    bool trouve;
+
 	do {
-        int i, bMaxIndice, vJoueur;
-        float bMax, b;
-        bool trouve;
+
         // Récursion jusqu'à trouver un état terminal ou un noeud avec aucun fils développé
         do {
             // Sélection du plus grand B-valeur si il existe
@@ -404,6 +406,35 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
 		iter ++;
 	} while ( temps < tempsmax );
 
+
+	/* Regle Max */
+    /*float recompense;
+	float recompenseMax = 0.;
+	int indiceRecompense;
+	for (i = 0; i < racine->nb_enfants; i++) {
+        recompense = (float)(racine->enfants[i]->nb_victoires) / (float)(racine->enfants[i]->nb_simus);
+        if (recompense > recompenseMax) {
+            recompenseMax = recompense;
+            indiceRecompense = i;
+        }
+	}
+    meilleur_coup = racine->enfants[indiceRecompense]->coup;*/
+
+
+    /* Regle robuste */
+    /*int nbSimus;
+    int nbSimusMax = 0;
+    int indiceSimus;
+    for (i = 0; i < racine->nb_enfants; i++) {
+        nbSimus = racine->enfants[i]->nb_simus;
+        if (nbSimus > nbSimusMax) {
+            nbSimusMax = nbSimus;
+            indiceSimus = i;
+        }
+    }
+    meilleur_coup = racine->enfants[indiceSimus]->coup;*/
+
+
 	/* fin de l'algorithme  */
 
 	// Jouer le meilleur premier coup
@@ -457,7 +488,7 @@ int main(void) {
 	afficheJeu(etat);
 
 	if ( fin == ORDI_GAGNE )
-		printf( "** L'ordinateur a gagné **\n");
+		printf( "** L'ordinateur a gagne **\n");
 	else
 		printf( "** BRAVO, l'ordinateur a perdu  **\n");
 	return 0;
