@@ -294,55 +294,50 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
 		k++;
 	}
 
-
-	//meilleur_coup = coups[ rand()%k ]; // choix aléatoire
-
     /* début de l'algorithme  */
 
 	int iter = 0;
-
-	int nb_vict = 0;
+    int nb_vict = 0;
 
 	do {
-        int i, bMaxIndice;
+        int i, bMaxIndice, vJoueur;
         float bMax, b;
         bool trouve;
         // Récursion jusqu'à trouver un état terminal ou un noeud avec aucun fils développé
         do {
             // Sélection du plus grand B-valeur si il existe
-            bMax = 0;
+            bMax = -8000;
+            vJoueur = 1;
+            if(racine->joueur == 0){
+                // humain
+                vJoueur = -1;
+            }
             trouve = false;
             for(i =0; i < racine->nb_enfants; i++){
                 if(racine->enfants[i]->nb_simus > 0){
-                    b = (((float)racine->enfants[i]->nb_victoires)/((float)racine->enfants[i]->nb_simus)) + C * sqrt(log((float)racine->nb_simus)/((float)racine->enfants[i]->nb_simus));
+                    b = vJoueur * (((float)racine->enfants[i]->nb_victoires)/((float)racine->enfants[i]->nb_simus)) + C * sqrt(log((float)racine->nb_simus)/((float)racine->enfants[i]->nb_simus));
                     if(b > bMax){
                         bMax = b;
                         bMaxIndice = i;
                     }
+                }else{
                     trouve = true;
                 }
             }
-            if(bMax > 0){
+            if(!trouve){
                 racine = racine->enfants[bMaxIndice];
             }
-        } while(testFin(racine->etat) == NON && bMax > 0);
-
-        if(bMax == 0 && testFin(racine->etat) == NON){
-            // Cas noeud où aucun fils développé ou aucun fils important développé
+        } while(testFin(racine->etat) == NON && !trouve);
+        if(trouve && testFin(racine->etat) == NON){
+            // Cas noeud où il existe fils non développé(s)
             // On choisit un fils aléatoirement jusqu'à arriver à un état terminal
             while(testFin(racine->etat) == NON){
                 // créer les fils
-                if(trouve){
-                    // Cas aucun fils important développé
+                i = rand()%racine->nb_enfants;
+                while(racine->enfants[i]->nb_simus > 0){
                     i = rand()%racine->nb_enfants;
-                    while(racine->enfants[i]->nb_simus > 0){
-                        i = rand()%racine->nb_enfants;
-                    }
-                    racine = racine->enfants[i];
-                }else{
-                    // Cas aucun fils développé
-                    racine = racine->enfants[rand()%racine->nb_enfants];
                 }
+                racine = racine->enfants[i];
                 coups = coups_possibles(racine->etat);
                 k = 0;
                 while ( coups[k] != NULL && testFin(racine->etat) == NON) {
