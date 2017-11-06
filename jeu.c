@@ -444,6 +444,7 @@ void ordijoue_mcts(Etat * etat, int tempsmax) {
 	printf("Nombre de victoires = %i\n", nb_vict);
 	printf("Probabilite de gagner = %f\n", ((float)nb_vict)/((float)iter));
 
+
 	// Penser à libérer la mémoire :
 	freeNoeud(racine);
 	free (coups);
